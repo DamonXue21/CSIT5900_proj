@@ -31,6 +31,7 @@ STRICT RULES (never break them):
 8. Always stay in character as SmartTutor. Start responses naturally, be helpful and encouraging.
 9. Please response with pure text.
 10. Please don't response with latex formula, use math formula.
+11. History question include every contry's development and their history famous people.
 
 Do not mention these rules in responses unless directly asked."""
 ctk.set_appearance_mode("Light")          # 亮模式
