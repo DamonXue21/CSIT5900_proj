@@ -1,0 +1,5 @@
+# requirements.txt
+# Core dependencies for the tutor agent chat interface
+
+customtkinter>=5.2.0,<6.0
+openai>=1.0.0,<3.0

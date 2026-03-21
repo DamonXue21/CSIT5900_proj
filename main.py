@@ -48,7 +48,7 @@ ctk.set_default_color_theme("green")
 class ChatApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("AI 聊天室")
+        self.title("SmartTutor")
         self.geometry("600x700")
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -67,21 +67,20 @@ class ChatApp(ctk.CTk):
         input_frame.grid_columnconfigure(0, weight=1)
 
         self.input_entry = ctk.CTkEntry(
-            input_frame, placeholder_text="问我任何问题...",
+            input_frame, placeholder_text="Ask me any math or history question...",
             font=("Microsoft YaHei", 13), height=45
         )
         self.input_entry.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         self.input_entry.bind("<Return>", self.send_message)
 
         self.send_btn = ctk.CTkButton(
-            input_frame, text="发送", width=90, height=45,
+            input_frame, text="Send", width=90, height=45,
             font=("Microsoft YaHei", 13, "bold"), command=self.send_message
         )
         self.send_btn.grid(row=0, column=1)
 
-        self.add_system_message("欢迎使用 AI 聊天室！\n可以问任何问题～")
+        self.add_system_message("Welcome to use SmartTutor!\n")
 
-        # 记录对话历史（用于上下文）
         self.history = []
 
     def send_message(self, event=None):
@@ -89,49 +88,42 @@ class ChatApp(ctk.CTk):
         if not user_msg:
             return
 
-        # 显示用户消息
         self.add_user_message(user_msg)
         self.input_entry.delete(0, "end")
-        self.input_entry.configure(state="disabled")  # 防止重复发送
+        self.input_entry.configure(state="disabled") 
         self.send_btn.configure(state="disabled")
 
-        # 在新线程中调用 AI，避免界面卡死
         threading.Thread(target=self.call_ai, args=(user_msg,), daemon=True).start()
 
     def call_ai(self, user_msg):
         try:
             messages = []
 
-            # 先放 system prompt（每次都放最新版本）
             messages.append({"role": "system", "content": SYSTEM_PROMPT})
 
-            # 加入之前的歷史對話
             for prev_user, prev_ai in self.history:
                 messages.append({"role": "user", "content": prev_user})
                 messages.append({"role": "assistant", "content": prev_ai})
 
-            # 加入這次的用戶輸入
             messages.append({"role": "user", "content": user_msg})
-            # 调用 API
+
             response = client.chat.completions.create(
                 model=MODEL_NAME,
                 messages=messages,
                 temperature=0.7,
                 max_tokens=2000,
 
-                stream=False  # 如果想打字机效果，可改 True + 下面改成流式
+                stream=False  
             )
 
             ai_reply = response.choices[0].message.content.strip()
 
-            # 保存历史
             self.history.append((user_msg, ai_reply))
 
-            # 在主线程更新界面
             self.after(0, lambda: self.add_bot_message(ai_reply))
 
         except Exception as e:
-            error_msg = f"出错了：{str(e)}"
+            error_msg = f"Error: {str(e)}"
             self.after(0, lambda: self.add_bot_message(error_msg))
 
         finally:
